@@ -1,131 +1,136 @@
 <template>
   <div class="base-input-wrapper">
-    <div>
-      <label
-        v-if="label"
-        class="base-form-label d-inline-block text-body-2 text-dark-blue-2"
-      >
-        {{ label }}
-      </label>
-      <div class="position-relative">
-        <slot
-          :modelValue="internalValue"
-          :updateModelValue="(val) => (internalValue = val)"
-        >
-          <v-text-field
-            v-model="internalValue"
-            :type="type"
-            :placeholder="placeholder"
-            :disabled="disabled"
-            :error="error"
-            :rules="rules"
-            :variant="variant"
-            density="comfortable"
-            hide-details="auto"
-            class="base-form-input"
-          />
-        </slot>
-        <div
-          v-if="currencyValue"
-          class="base-form-currency-value position-absolute"
-        >
-          {{ currencyValue }}
-        </div>
-      </div>
-    </div>
-    <div class="base-form-description d-flex justify-end">
-      <span v-if="description" class="text-caption text-dark-blue-2">
-        {{ description }}
+    <label v-if="label" class="base-input-label">{{ label }}</label>
+    <div class="input-message-symbol-wrapper">
+      <input
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :class="['base-input', status]"
+        :style="{ paddingRight: symbol ? '50px' : '16px' }"
+      />
+      <span v-if="symbol" class="input-symbol">{{ symbol }}</span>
+      <span v-if="message" :class="['base-input-message', status]">
+        {{ message }}
       </span>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from "vue";
+<script setup>
+import { defineProps, defineEmits } from "vue";
 
 const props = defineProps({
-  modelValue: [String, Number, Object, Array],
-  label: String,
-  description: String,
-  currencyValue: String,
-  type: {
-    type: String,
-    default: "text",
-  },
-  placeholder: String,
-  variant: String,
-  baseColor: String,
-  disabled: Boolean,
-  error: Boolean,
-  rules: {
-    type: Array,
-    default: () => [],
-  },
+  modelValue: { type: String, default: "" },
+  label: { type: String, default: "" },
+  placeholder: { type: String, default: "" },
+  status: { type: String, default: "basic" }, // 'basic' | 'warn' | 'error'
+  message: { type: String, default: "" },
+  disabled: { type: Boolean, default: false },
+  symbol: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:modelValue"]);
-
-const internalValue = computed({
-  get: () => props.modelValue,
-  set: (val) => emit("update:modelValue", val),
-});
+defineEmits(["update:modelValue"]);
 </script>
 
-<style scoped lang="scss">
-.base-form {
-  &-label {
-    padding: 10px 14px;
-  }
-  &-description {
-    padding: 4px 14px;
-  }
+<style>
+:root {
+  --color-disabled-text: rgba(91, 91, 93, 1);
+  --color-message-basic: rgba(8, 22, 61, 1);
+  --color-message-warn: rgba(220, 117, 25, 1);
+  --color-message-error: rgba(207, 73, 73, 1);
+
+  --color-symbol-border: rgba(227, 227, 237, 1);
+
+  --color-border-default: rgba(227, 227, 237, 0.8);
+  --color-bg-default: rgba(249, 249, 250, 0.7);
+  --color-text-primary: rgba(62, 73, 103, 1);
+  --color-placeholder: #999;
 }
-:deep(.v-field__input) {
-  padding: 10px 14px !important;
-  height: 48px;
-  color: rgb(var(--v-theme-dark-blue-8)) !important;
+
+.base-input-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.base-input-label {
+  margin-bottom: 10px;
+  padding-left: 14px;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.input-message-symbol-wrapper {
+  position: relative;
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
+  background-color: var(--color-bg-default);
   backdrop-filter: blur(42.400001525878906px);
-  background: rgba(249, 249, 250, 0.7);
 }
-:deep(.v-field--focused) {
-  border: none !important;
+
+.base-input {
+  width: 100%;
+  height: 48px;
+  padding-left: 16px;
+  font-weight: 400;
+  font-size: 16px;
+  padding-left: 16px;
 }
-:deep(.v-field--variant-outlined .v-field__outline__start) {
-  opacity: unset !important;
+
+.base-input:focus,
+.base-input:focus-visible {
+  border: 1px solid var(--color-border-default);
+  outline: none;
+  box-shadow: unset;
 }
-:deep(.v-field--variant-outlined .v-field__outline__end) {
-  opacity: unset !important;
+
+.base-input::placeholder {
+  color: var(--color-placeholder);
 }
-:deep(.v-field--active .v-field__outline) {
-  color: rgb(var(--v-theme-light-blue-8)) !important;
+
+.base-input:disabled {
+  color: var(--color-disabled-text);
+  cursor: not-allowed;
 }
-:deep(.v-autocomplete .mdi-menu-down::before) {
-  content: "" !important;
-  background-image: url("/public/assets/img/chevron.svg");
-  width: 20px;
-  height: 20px;
-  background-repeat: no-repeat;
-}
-:deep(.v-autocomplete .v-field--appended) {
-  padding-inline-end: 14px;
-}
-:deep(.v-autocomplete .v-field__overlay) {
-  background: rgba(249, 249, 250, 0.7);
-}
-.base-form-currency-value {
+
+.base-input-message {
+  font-size: 12px;
+  position: absolute;
+  top: calc(100% + 4px);
   right: 14px;
-  top: 12px;
-  &:before {
+}
+
+.input-symbol {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--color-text-primary);
+  pointer-events: none;
+  user-select: none;
+  &::before {
     content: "";
-    width: 28px;
-    height: 1px;
-    background-color: rgb(var(--v-theme-light-gray-2));
     position: absolute;
-    transform: rotate(90deg);
-    top: 11px;
-    right: 16px;
+    height: 30px;
+    width: 1px;
+    background-color: var(--color-symbol-border);
+    top: 50%;
+    right: calc(100% + 16px);
+    transform: translateY(-50%);
   }
+}
+
+.base-input-message.basic {
+  color: var(--color-message-basic);
+}
+
+.base-input-message.warn {
+  color: var(--color-message-warn);
+}
+.base-input-message.error {
+  color: var(--color-message-error);
 }
 </style>
