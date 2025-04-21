@@ -1,42 +1,48 @@
 <template>
   <div class="base-input-wrapper">
     <div>
-      <label v-if="label" class="base-form-label d-inline-block text-body-2 text-dark-blue-2">
+      <label
+        v-if="label"
+        class="base-form-label d-inline-block text-body-2 text-dark-blue-2"
+      >
         {{ label }}
       </label>
       <div class="position-relative">
         <slot
-            :modelValue="internalValue"
-            :updateModelValue="(val) => (internalValue = val)"
+          :modelValue="internalValue"
+          :updateModelValue="(val) => (internalValue = val)"
         >
           <v-text-field
-              v-model="internalValue"
-              :type="type"
-              :placeholder="placeholder"
-              :disabled="disabled"
-              :error="error"
-              :rules="rules"
-              :variant="variant"
-              density="comfortable"
-              label="Մուտքագրել"
-              hide-details="auto"
-              class="base-form-input"
+            v-model="internalValue"
+            :type="type"
+            :placeholder="placeholder"
+            :disabled="disabled"
+            :error="error"
+            :rules="rules"
+            :variant="variant"
+            density="comfortable"
+            hide-details="auto"
+            class="base-form-input"
           />
         </slot>
-        <div v-if="currencyValue" class="base-form-currency-value position-absolute">{{currencyValue}}</div>
+        <div
+          v-if="currencyValue"
+          class="base-form-currency-value position-absolute"
+        >
+          {{ currencyValue }}
+        </div>
       </div>
-
     </div>
     <div class="base-form-description d-flex justify-end">
-       <span v-if="description" class="text-caption text-dark-blue-2">
-      {{ description }}
-    </span>
+      <span v-if="description" class="text-caption text-dark-blue-2">
+        {{ description }}
+      </span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   modelValue: [String, Number, Object, Array],
@@ -45,7 +51,7 @@ const props = defineProps({
   currencyValue: String,
   type: {
     type: String,
-    default: 'text',
+    default: "text",
   },
   placeholder: String,
   variant: String,
@@ -56,14 +62,14 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-})
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 const internalValue = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val),
-})
+  set: (val) => emit("update:modelValue", val),
+});
 </script>
 
 <style scoped lang="scss">
@@ -75,7 +81,7 @@ const internalValue = computed({
     padding: 4px 14px;
   }
 }
-:deep(.v-field__input){
+:deep(.v-field__input) {
   padding: 10px 14px !important;
   height: 48px;
   color: rgb(var(--v-theme-dark-blue-8)) !important;
@@ -83,7 +89,7 @@ const internalValue = computed({
   backdrop-filter: blur(42.400001525878906px);
   background: rgba(249, 249, 250, 0.7);
 }
-:deep(.v-field--focused){
+:deep(.v-field--focused) {
   border: none !important;
 }
 :deep(.v-field--variant-outlined .v-field__outline__start) {
@@ -92,18 +98,18 @@ const internalValue = computed({
 :deep(.v-field--variant-outlined .v-field__outline__end) {
   opacity: unset !important;
 }
-:deep(.v-field--active .v-field__outline){
+:deep(.v-field--active .v-field__outline) {
   color: rgb(var(--v-theme-light-blue-8)) !important;
 }
 :deep(.v-autocomplete .mdi-menu-down::before) {
-  content: '' !important;
-  background-image: url('/public/assets/img/chevron.svg');
+  content: "" !important;
+  background-image: url("/public/assets/img/chevron.svg");
   width: 20px;
   height: 20px;
   background-repeat: no-repeat;
 }
 :deep(.v-autocomplete .v-field--appended) {
-    padding-inline-end: 14px;
+  padding-inline-end: 14px;
 }
 :deep(.v-autocomplete .v-field__overlay) {
   background: rgba(249, 249, 250, 0.7);
@@ -112,7 +118,7 @@ const internalValue = computed({
   right: 14px;
   top: 12px;
   &:before {
-    content: '';
+    content: "";
     width: 28px;
     height: 1px;
     background-color: rgb(var(--v-theme-light-gray-2));
