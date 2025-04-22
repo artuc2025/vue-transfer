@@ -1,74 +1,102 @@
-<script setup lang="ts">
+<template>
+  <div
+    class="toggle-switch-wrapper"
+    :class="{ 'toggle-switch-wrapper--disabled': disabled }"
+    @click="toggle"
+  >
+    <label
+      v-if="$slots.label || label"
+      class="toggle-switch-label"
+      :style="{ marginRight: gap + 'px' }"
+    >
+      <template v-if="$slots.label">
+        <slot name="label"></slot>
+      </template>
+      <template v-else>
+        {{ label }}
+      </template>
+    </label>
+
+    <div
+      class="toggle-switch"
+      :class="{ 'toggle-switch--checked': modelValue }"
+      :style="{
+        width: width + 'px',
+        height: height + 'px'
+      }"
+    >
+      <div
+        class="toggle-switch__circle"
+        :style="{
+          width: circleSize + 'px',
+          height: circleSize + 'px',
+          transform: 'translateX(' + (modelValue ? width - height : 0) + 'px)'
+        }"
+      ></div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { defineProps, defineEmits, computed } from 'vue'
+
 const props = defineProps({
-  modelValue: [Boolean, String, Number],
-  label: String,
-  description: String,
-  disabled: Boolean,
-  loading: Boolean,
-  inset: Boolean,
-  color: {
-    type: String,
-    default: 'primary',
-  },
-  trueValue: {
-    default: true,
-  },
-  falseValue: {
-    default: false,
-  },
+  modelValue: { type: Boolean, required: true },
+  label: { type: String, default: '' },
+  size: { type: Number, default: 24 },
+  gap: { type: Number, default: 8 },
+  disabled: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['update:modelValue'])
 
-const internalValue = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val),
-})
+const width = computed(() => props.size * 1.6)
+const height = computed(() => props.size)
+const circleSize = computed(() => props.size - 4)
+const gap = computed(() => props.gap)
+
+function toggle() {
+  if (props.disabled) return
+  emit('update:modelValue', !props.modelValue)
+}
 </script>
 
-<template>
-  <div class="base-switch-wrapper">
-    <label v-if="label" class="base-switch-label text-body-2 d-block mb-1">
-      {{ label }}
-    </label>
-
-    <v-switch
-        v-model="internalValue"
-        :disabled="disabled"
-        :loading="loading"
-        :inset="inset"
-        :color="color"
-        :true-value="trueValue"
-        :false-value="falseValue"
-        hide-details="auto"
-        class="base-switch"
-    >
-      <template v-if="$slots.append" #append>
-        <slot name="append" />
-      </template>
-      <template v-if="$slots.label" #label>
-        <slot name="label" />
-      </template>
-    </v-switch>
-
-    <span v-if="description" class="base-switch-description text-caption d-block mt-1">
-      {{ description }}
-    </span>
-  </div>
-</template>
-
-
-<style scoped lang="scss">
-:deep(.v-switch__track) {
-  opacity: unset;
-}
-:deep(.v-switch--inset .v-switch__track) {
-  height: 36px;
-  min-width: 56px;
-}
-:deep(.v-switch--inset .v-switch__thumb) {
-    height: 28px;
-    width: 28px;
+<style scoped>
+.toggle-switch-wrapper {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
 }
 
+.toggle-switch-wrapper--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.toggle-switch-label {
+  color: rgba(var(--v-theme-dark-blue-2));
+  font-size: 14px;
+}
+
+.toggle-switch {
+  position: relative;
+  background-color: rgba(var(--v-theme-light-gray-2));
+  border-radius: 999px;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch--checked {
+  background-color: rgba(var(--v-theme-primary));
+}
+
+.toggle-switch__circle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background-color: rgba(var(--v-theme-background));
+  border: 0.5px solid rgba(var(--v-theme-light-gray-2));
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0px 3px 1px 0px #0000000F, 0px 3px 8px 0px #00000026;
+}
 </style>
