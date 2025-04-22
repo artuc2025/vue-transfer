@@ -2,31 +2,38 @@
   <div
     :class="[
       'dropdown',
-      `dropdown--${props.status}`,
       { 'dropdown--disabled': props.disabled },
+      { 'dropdown--open': isOpen },
     ]"
     ref="dropdownRef"
   >
     <label v-if="props.label" class="dropdown__label">{{ props.label }}</label>
-    <button
-      type="button"
-      class="dropdown__toggle"
-      :disabled="props.disabled"
-      @click="toggleDropdown"
-    >
-      <span class="dropdown__selected">{{ displayLabel }}</span>
-      <span class="dropdown__arrow">▾</span>
-    </button>
-    <ul v-if="isOpen" class="dropdown__list">
-      <li
-        v-for="(item, index) in filteredItems"
-        :key="index"
-        class="dropdown__item"
-        @click="select(item)"
-      >
-        {{ typeof item === "object" ? item.label ?? item : item }}
-      </li>
-    </ul>
+    <div class="dropdown__header-body-wrapper">
+        <div class="dropdown__header">
+
+          <button
+          type="button"
+          class="dropdown__toggle"
+          :disabled="props.disabled"
+          @click="toggleDropdown"
+        >
+          <span class="dropdown__selected">{{ displayLabel }}</span>
+          <div class="dropdown__arrow">
+            <svgo-chevron-down />
+          </div>
+        </button>
+        </div>
+      <ul v-if="isOpen" class="dropdown__list">
+        <li
+          v-for="(item, index) in filteredItems"
+          :key="index"
+          class="dropdown__item"
+          @click="select(item)"
+        >
+          {{ typeof item === "object" ? item.label ?? item : item }}
+        </li>
+      </ul>
+    </div>
     <div
       v-if="props.message"
       :class="['dropdown__message', `dropdown__message--${props.status}`]"
@@ -102,108 +109,96 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
-$border-basic: #ccc;
-$border-warn: #f0ad4e;
-$border-error: #d9534f;
-$msg-basic: #666;
-$msg-warn: #f0ad4e;
-$msg-error: #d9534f;
-$bg: #fff;
-$bg-hover: #f5f5f5;
-$box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
 .dropdown {
-  position: relative;
-  display: inline-block;
-  font-family: inherit;
+  &--open {
+    .dropdown__arrow {
+      transform: rotate(180deg);
+    }
+  }
 
   &__label {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.875rem;
+    margin-bottom: 10px;
+    padding-left: 14px;
+    font-weight: 400;
+    font-size: 14px;
+    color: rgba(var(--v-theme-dark-blue-8));
+  }
+  
+  .dropdown__header-body-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
 
   &__toggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 200px;
-    padding: 8px;
-    border: 1px solid;
-    background: $bg;
+    width: 100%;
+    min-width: 200px;
+    height: 48px;
+    padding: 0 16px;
+    border: 1px solid rgba(var(--v-theme-light-gray-2), 0.8);
+    border-radius: 6px;
+    background-color: rgba(var(--v-theme-light-gray-1), 0.7);
+    backdrop-filter: blur(42.400001525878906px);
     cursor: pointer;
-
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
   }
 
-  &--basic {
-    .dropdown__toggle {
-      border-color: $border-basic;
-    }
-  }
-
-  &--warn {
-    .dropdown__toggle {
-      border-color: $border-warn;
-    }
-  }
-
-  &--error {
-    .dropdown__toggle {
-      border-color: $border-error;
-    }
-  }
-
-  &--disabled {
-    .dropdown__toggle {
-      background: #e6e6e6;
-    }
+  &__selected {
+    font-weight: 400;
+    color: rgba(var(--v-theme-dark-blue-8));
   }
 
   &__arrow {
-    margin-left: 8px;
+    color: rgba(var(--v-theme-dark-blue-2));
+    font-size: 10px;
+    transition: transform 0.3s ease;
   }
 
   &__list {
     position: absolute;
+    top: calc(100% + 10px);
     z-index: 1000;
-    margin: 0;
-    padding: 0;
-    list-style: none;
     width: 100%;
-    border: 1px solid $border-basic;
-    background: $bg;
+    background-color: rgba(var(--v-theme-background));
+    border: 1px solid rgba(var(--v-theme-light-gray-2), 0.8);
+    border-radius: 6px;
     max-height: 200px;
+    margin: 0;
+    list-style: none;
+    padding: 16px;
+    overflow-x: hidden;
     overflow-y: auto;
-    box-shadow: $box-shadow;
+    backdrop-filter: blur(42.400001525878906px)
   }
-
+  
   &__item {
-    padding: 8px;
+    color: rgba(var(--v-theme-light-gray-26));
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 6px;
     cursor: pointer;
 
     &:hover {
-      background-color: $bg-hover;
+      background-color: rgba(var(--v-theme-light-blue-9));
     }
   }
 
   &__message {
     margin-top: 4px;
-    font-size: 0.75rem;
-
+    font-size: 12px;
+    text-align: right;
     &--basic {
-      color: $msg-basic;
+      color: rgba(var(--v-theme-dark-blue-2));
     }
 
     &--warn {
-      color: $msg-warn;
+      color: rgba(var(--v-theme-warning));;
     }
 
     &--error {
-      color: $msg-error;
+      color: rgba(var(--v-theme-error));;
     }
   }
 }
