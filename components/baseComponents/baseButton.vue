@@ -1,12 +1,8 @@
 <template>
   <button
-      :class="[
-      'base-button w-100 font-weight-medium rounded-lg cursor-pointer d-inline-flex align-center justify-center bg-primary text-white text-subtitle-1',
-      variant,
-      size,
-      { disabled }
-    ]"
-      :disabled="disabled"
+    :class="['base-button', variant, size]"
+    :disabled="disabled"
+    :type="loading ? 'disabled' : 'button'"
   >
     <slot />
   </button>
@@ -17,10 +13,6 @@ defineProps({
   variant: {
     type: String,
     default: 'primary',
-  },
-  size: {
-    type: String,
-    default: 'md',
   },
   disabled: {
     type: Boolean,
@@ -35,13 +27,25 @@ defineProps({
 
 <style scoped lang="scss">
 .base-button {
-  border: none;
-  height: 48px;
-}
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border-radius: 6px;
+  font-weight: 500;
 
-button[type="disabled"] {
-  opacity: 30%;
-  pointer-events: none;
+  &:focus {
+    outline: none;
+  }
+  &.primary {
+    background-color: rgba(var(--v-theme-primary));
+    color: rgba(var(--v-theme-background));
+  }
+  &:disabled {
+    background-color: rgba(var(--v-theme-primary), 0.5);
+    color: rgba(var(--v-theme-background), 0.5);
+    cursor: not-allowed;
+  }
 }
 
 </style>
