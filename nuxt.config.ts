@@ -23,4 +23,7 @@ export default defineNuxtConfig({
     },
   },
   css: ["~/assets/main.scss"],
+    vuetify: {
+    vuetifyOptions: './vuetify/config.ts'
+  },
 });
