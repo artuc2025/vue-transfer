@@ -197,9 +197,19 @@ export function useExchangeCalculator(
     editingField.value = field;
     lastEdited.value = field;
     if (field === "from") {
-      inputFrom.value = rawFrom.value === 0 ? "" : rawFrom.value.toFixed(2);
+      inputFrom.value =
+        rawFrom.value === 0
+          ? ""
+          : isInt(rawFrom.value)
+          ? rawFrom.value.toString()
+          : rawFrom.value.toFixed(2);
     } else {
-      inputTo.value = rawTo.value === 0 ? "" : rawTo.value.toFixed(2);
+      inputTo.value =
+        rawTo.value === 0
+          ? ""
+          : isInt(rawTo.value)
+          ? rawTo.value.toString()
+          : rawTo.value.toFixed(2);
     }
   }
   function onBlur(): void {
@@ -238,4 +248,8 @@ export function useExchangeCalculator(
     onBlur,
     swapCurrencies,
   } as const;
+}
+
+function isInt(n: number): boolean {
+  return n % 1 === 0;
 }
