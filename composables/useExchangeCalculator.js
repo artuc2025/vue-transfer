@@ -1,3 +1,13 @@
+// composables/useExchangeCalculator.js
+import { ref, computed, watch } from "vue";
+
+/**
+ * Reusable exchange calculator logic with formatting, validation, and focus behavior.
+ * @param {Array} rawRates - rate objects: { externalId, cashSell, cashlessSell, cashBuy, cashlessBuy }
+ * @param {Object} options
+ * @param {Function} options.formatNumber - formats numbers for display
+ * @param {Function} options.parseNumber  - parses formatted strings to numbers
+ */
 export function useExchangeCalculator(
   rawRates,
   {
@@ -5,7 +15,7 @@ export function useExchangeCalculator(
     parseNumber = (s) => Number(String(s).replace(/,/g, "")),
   } = {}
 ) {
-  // Build lookup map (include AMD base)
+  // Build lookup map (include AMD as base)
   const ratesMap = {
     AMD: {
       externalId: "AMD",
@@ -34,9 +44,15 @@ export function useExchangeCalculator(
   const fromCurrency = ref("AMD");
   const toCurrency = ref("USD");
   const lastEdited = ref("from"); // 'from' | 'to'
-  const editingField = ref(null); // track focus for formatting
+  const editingField = ref(null); // which field is focused
+
+  // Raw numeric values
   const rawFrom = ref(0);
   const rawTo = ref(0);
+
+  // Input buffers for editing
+  const inputFrom = ref("");
+  const inputTo = ref("");
 
   // Dropdown options
   const fromCurrencyOptions = computed(() =>
@@ -46,77 +62,87 @@ export function useExchangeCalculator(
     allCurrencies.filter((c) => c !== fromCurrency.value)
   );
 
-  // Helper to get rate object
+  // Rate lookup
   const getRate = (cur) => ratesMap[cur];
 
-  // Core calculation on raw numbers
+  // Calculation: always round to 2 decimals
   function calculateRawTo() {
     const amt = rawFrom.value;
-    let result = 0;
+    let res = 0;
     if (fromCurrency.value === "AMD") {
-      const rate = getRate(toCurrency.value)[
-        mode.value === "cash" ? "cashSell" : "cashlessSell"
-      ];
-      result = amt / rate;
+      res =
+        amt /
+        getRate(toCurrency.value)[
+          mode.value === "cash" ? "cashSell" : "cashlessSell"
+        ];
     } else if (toCurrency.value === "AMD") {
-      const rate = getRate(fromCurrency.value)[
-        mode.value === "cash" ? "cashBuy" : "cashlessBuy"
-      ];
-      result = amt * rate;
-    } else {
-      const viaAMD =
+      res =
         amt *
         getRate(fromCurrency.value)[
           mode.value === "cash" ? "cashBuy" : "cashlessBuy"
         ];
-      const rate = getRate(toCurrency.value)[
-        mode.value === "cash" ? "cashSell" : "cashlessSell"
-      ];
-      result = viaAMD / rate;
+    } else {
+      const via =
+        amt *
+        getRate(fromCurrency.value)[
+          mode.value === "cash" ? "cashBuy" : "cashlessBuy"
+        ];
+      res =
+        via /
+        getRate(toCurrency.value)[
+          mode.value === "cash" ? "cashSell" : "cashlessSell"
+        ];
     }
-    rawTo.value = result;
+    rawTo.value = Number(res.toFixed(2));
   }
-
   function calculateRawFrom() {
     const amt = rawTo.value;
-    let result = 0;
+    let res = 0;
     if (toCurrency.value === "AMD") {
-      const rate = getRate(fromCurrency.value)[
-        mode.value === "cash" ? "cashBuy" : "cashlessBuy"
-      ];
-      result = amt / rate;
+      res =
+        amt /
+        getRate(fromCurrency.value)[
+          mode.value === "cash" ? "cashBuy" : "cashlessBuy"
+        ];
     } else if (fromCurrency.value === "AMD") {
-      const rate = getRate(toCurrency.value)[
-        mode.value === "cash" ? "cashSell" : "cashlessSell"
-      ];
-      result = amt * rate;
+      res =
+        amt *
+        getRate(toCurrency.value)[
+          mode.value === "cash" ? "cashSell" : "cashlessSell"
+        ];
     } else {
-      const viaAMD =
+      const via =
         amt *
         getRate(toCurrency.value)[
           mode.value === "cash" ? "cashBuy" : "cashlessBuy"
         ];
-      const rate = getRate(fromCurrency.value)[
-        mode.value === "cash" ? "cashSell" : "cashlessSell"
-      ];
-      result = viaAMD / rate;
+      res =
+        via /
+        getRate(fromCurrency.value)[
+          mode.value === "cash" ? "cashSell" : "cashlessSell"
+        ];
     }
-    rawFrom.value = result;
+    rawFrom.value = Number(res.toFixed(2));
   }
 
-  // Computed with formatting and parsing
+  // Computed values with formatting & validation
   const fromAmount = computed({
     get() {
-      // if editing, show unformatted
       if (editingField.value === "from") {
-        return rawFrom.value === 0 ? "" : String(rawFrom.value);
+        return inputFrom.value;
       }
       return formatNumber(rawFrom.value);
     },
     set(val) {
-      const parsed = parseNumber(val);
-      if (!isNaN(parsed)) {
-        rawFrom.value = parsed;
+      if (editingField.value !== "from") return;
+      // validation: integer max12, decimal max2
+      const [intPart, decPart] = val.split(".");
+      if (intPart.length > 12) return;
+      if (decPart && decPart.length > 2) return;
+      inputFrom.value = val;
+      const num = parseNumber(val);
+      if (!isNaN(num)) {
+        rawFrom.value = num;
         lastEdited.value = "from";
         calculateRawTo();
       }
@@ -126,14 +152,19 @@ export function useExchangeCalculator(
   const toAmount = computed({
     get() {
       if (editingField.value === "to") {
-        return rawTo.value === 0 ? "" : String(rawTo.value);
+        return inputTo.value;
       }
       return formatNumber(rawTo.value);
     },
     set(val) {
-      const parsed = parseNumber(val);
-      if (!isNaN(parsed)) {
-        rawTo.value = parsed;
+      if (editingField.value !== "to") return;
+      const [intPart, decPart] = val.split(".");
+      if (intPart.length > 12) return;
+      if (decPart && decPart.length > 2) return;
+      inputTo.value = val;
+      const num = parseNumber(val);
+      if (!isNaN(num)) {
+        rawTo.value = num;
         lastEdited.value = "to";
         calculateRawFrom();
       }
@@ -144,43 +175,44 @@ export function useExchangeCalculator(
   function onFocus(field) {
     editingField.value = field;
     lastEdited.value = field;
+    if (field === "from") {
+      inputFrom.value = rawFrom.value.toFixed(2);
+    } else {
+      inputTo.value = rawTo.value.toFixed(2);
+    }
   }
   function onBlur() {
     editingField.value = null;
+    inputFrom.value = "";
+    inputTo.value = "";
   }
 
-  // Recalculate on currency or mode change
+  // Recalculate on currency/mode change
   watch([fromCurrency, toCurrency, mode], () => {
     if (lastEdited.value === "from") calculateRawTo();
     else calculateRawFrom();
   });
 
-  // Swap functionality
+  // Swap currencies & values
   function swapCurrencies() {
-    const prevCur = fromCurrency.value;
-    fromCurrency.value = toCurrency.value;
-    toCurrency.value = prevCur;
-
-    const prevRaw = rawFrom.value;
-    rawFrom.value = rawTo.value;
-    rawTo.value = prevRaw;
-
+    [fromCurrency.value, toCurrency.value] = [
+      toCurrency.value,
+      fromCurrency.value,
+    ];
+    [rawFrom.value, rawTo.value] = [rawTo.value, rawFrom.value];
     editingField.value = null;
     lastEdited.value = "from";
     calculateRawTo();
   }
 
   return {
-    // state
     mode,
     fromCurrency,
     toCurrency,
     fromCurrencyOptions,
     toCurrencyOptions,
-    // formatted amounts
     fromAmount,
     toAmount,
-    // handlers
     onFocus,
     onBlur,
     swapCurrencies,
