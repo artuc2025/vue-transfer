@@ -176,11 +176,13 @@ export function useExchangeCalculator(
     editingField.value = field;
     lastEdited.value = field;
     if (field === "from") {
-      inputFrom.value = rawFrom.value.toFixed(2);
+      // clear if zero, else show two decimals
+      inputFrom.value = rawFrom.value === 0 ? "" : rawFrom.value.toFixed(2);
     } else {
-      inputTo.value = rawTo.value.toFixed(2);
+      inputTo.value = rawTo.value === 0 ? "" : rawTo.value.toFixed(2);
     }
   }
+
   function onBlur() {
     editingField.value = null;
     inputFrom.value = "";
