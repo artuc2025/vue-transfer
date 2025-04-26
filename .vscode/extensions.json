@@ -2,7 +2,7 @@
   "recommendations": [
     "esbenp.prettier-vscode",
     "Vue.volar",
-    "bradlco.vscode-tailwindcss",
+    "bradgollan.vscode-tailwindcss",
     "dbaeumer.vscode-eslint",
     "prisma.prisma"
   ],
