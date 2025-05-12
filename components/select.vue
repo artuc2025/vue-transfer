@@ -22,7 +22,7 @@ const props = defineProps<{
   placeholder: string;
 }>();
 
-const model = defineModel();
+const model = defineModel<readonly string[] | null | undefined>();
 const triangleIcon = () =>
   h(
     "svg",
