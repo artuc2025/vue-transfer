@@ -5,7 +5,7 @@
       :items="props.items"
       multiple
       variant="outlined"
-      v-model="selectedItems"
+      v-model="model"
       :placeholder="props.placeholder"
       :menu-icon="triangleIcon"
       :menu-props="{ class: 'base-select-menu__content' }"
@@ -22,7 +22,7 @@ const props = defineProps<{
   placeholder: string;
 }>();
 
-const selectedItems = ref<string[]>(props.selected || []);
+const model = defineModel();
 const triangleIcon = () =>
   h(
     "svg",
